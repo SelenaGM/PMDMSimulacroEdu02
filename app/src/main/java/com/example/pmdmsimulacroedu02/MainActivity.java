@@ -1,6 +1,7 @@
 package com.example.pmdmsimulacroedu02;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import com.example.pmdmsimulacroedu02.adapters.ProductosModelAdapter;
@@ -11,6 +12,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,8 +57,14 @@ public class MainActivity extends AppCompatActivity {
         calculaValores();
         //DESPUES DE INICIALIZAR LA LISTA SERA EL MOMENTO DE INICIALIZAR EL ADAPTER; ANTES NO O SERA NULL LA LISTA
         adapter = new ProductosModelAdapter(productoModelsList, R.layout.producto_view_holder, this);
-        //el 1 es una columna
-        layoutManager = new GridLayoutManager(this,1);
+        //PARA QUE CUANDO ESTE EN HORIZONTAL PONGA 2 Y CUANDO ESTE EN VERTICAL 1
+
+//        int columnas = 1;
+//        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+//            columnas = 2;
+//        }
+        int columnas = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE? 2 : 1;
+        layoutManager = new GridLayoutManager(this,columnas);
 
         binding.contentMain.contenedor.setLayoutManager(layoutManager);
         binding.contentMain.contenedor.setAdapter(adapter);
@@ -108,5 +116,22 @@ public class MainActivity extends AppCompatActivity {
         binding.contentMain.lblCantidadTotalMain.setText(String.valueOf(cantidad));
         binding.contentMain.lblPrecioTotalMain.setText(numberFormat.format(precio));
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        //PARA QUE GUARDE AL GIRAR
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("LISTA" ,productoModelsList);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        ArrayList<ProductoModel> kk = (ArrayList<ProductoModel>) savedInstanceState.getSerializable("LISTA");
+        productoModelsList.addAll(kk);
+        adapter.notifyItemRangeInserted(0, productoModelsList.size());
+        calculaValores();
     }
 }
